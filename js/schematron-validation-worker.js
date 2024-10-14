@@ -54,9 +54,9 @@ async function loadPyodideAndPackages() {
 
     await pyodide.loadPackagesFromImports(python);
 
-    await pyodide.loadPackage("micropip");
-    const micropip = pyodide.pyimport("micropip");
-    await micropip.install('pyschematron');
+    #await pyodide.loadPackage("micropip");
+    #const micropip = pyodide.pyimport("micropip");
+    #await micropip.install('pyschematron');
 
 }
 
