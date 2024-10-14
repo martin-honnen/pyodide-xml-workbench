@@ -45,7 +45,7 @@ svrl_report = DefaultSVRLReportBuilder().create_svrl_xml(validation_results)
 report_str = etree.tostring(svrl_report, pretty_print=True).decode('utf-8')
 
 result = 'XML is valid against the Schematron:' if validation_results.is_valid() else 'XML is invalid against the Schematron:'
-result += '\r\n' + report_str
+result += '\\n' + report_str
 result
 `;
 
