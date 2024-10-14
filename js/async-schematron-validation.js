@@ -4,7 +4,7 @@ async function schematronValidation(xml, schematron, dirHandle, baseUri) {
     try {
         setDocument(resultEditor, 'Performing Schematron validation...', 'text');
 
-        const { results, error } = await asyncRun({xml, schematrong, dirHandle, baseUri});
+        const { results, error } = await asyncRun({xml, schematron, dirHandle, baseUri});
 
         if (results) {
             setDocument(resultEditor, results, 'text');
