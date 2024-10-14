@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML workbench: Python and Pyodide powered XSLT 1.0 (lxml), XSD 1.1 (xmlschema), Schematron (pyschematron)</title>
+
+    <link rel="stylesheet" href="css/ace-fiddle.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.34.2/ace.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.34.2/mode-xml.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.34.2/mode-html.js"></script>
+<!--    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.0/full/pyodide.js"></script>-->
+</head>
+<body class="container">
+<header>
+    <nav class="grid-row button-bar">
+        <h2>XML Workbench</h2>
+        <form id="input-type-form" onsubmit="return false;">
+            <fieldset id="input-types">
+                <legend>input type</legend>
+                <label><input type="radio" name="input-type" value="XML" checked>XML</label>
+                <!--<label><input type="radio" name="input-type" value="JSON">JSON</label>
+                <label><input type="radio" name="input-type" value="TEXT">plain text</label>
+                <label><input type="radio" name="input-type" value="None">No input</label>-->
+            </fieldset>
+            <fieldset id="code-types">
+                <legend>code type</legend>
+                <label><input type="radio" name="code-type" value="XSLT" checked>XSLT</label>
+                <!--<label><input type="radio" name="code-type" value="XQuery">XQuery</label>
+                <label><input type="radio" name="code-type" value="XPath">XPath</label>-->
+                <label><input type="radio" name="code-type" value="XSD">XSD</label>
+                <label><input type="radio" name="code-type" value="Schematrong">Schematron</label>
+            </fieldset>
+            <fieldset>
+                <legend>XSD version</legend>
+                <label>version <select id="xsd-version"><option value="11" selected>1.1</option><option value="10">1.0</option></select></label>
+            </fieldset>
+        </form>
+        <input type="button" id="transform" value="XSLT transformation" accesskey="t">
+        <!--<input type="button" id="xquery" value="XQuery" accesskey="q"
+               onclick="var inputType = document.getElementById('input-types').form['input-type'].value;
+                            xquery(inputType !== 'None' ? inputEditor.session.getValue() : null, codeEditor.session.getValue(), inputType, document.getElementById('results'));">
+        <input type="button" id="xpath" value="XPath" accesskey="a"
+               onclick="var inputType = document.getElementById('input-types').form['input-type'].value;
+                            xpath(inputType !== 'None' ? inputEditor.session.getValue() : null, codeEditor.session.getValue(), inputType, document.getElementById('results'));">
+        -->
+        <input type="button" id="xsd" value="XSD validation" accesskey="V" title="validate XML against XSD schema">
+        <input type="button" id="schematrong" value="Schematron validation" title="validate XML against Schematrong">
+        <input type="button" id="save" value="save as URL" accesskey="s"
+               onclick="save(document.getElementById('input-type-form'));">
+    </nav>
+</header>
+<div class="view-container">
+
+    <main role="main" class="pb-3 view-container">
+        <section class="grid-row button-bar">
+            <span><label>working directory: <input id="working-directory" type="text" size="38"></label>
+                <input id="load-directory-btn" type="button" value="select working directory"></span>
+        </section>
+        <section class="grid-row">
+            <div id="input-col" class="grid-item">
+                <select id="input-editor-file-list"></select>
+                <div id="input-editor" class="editor"></div>
+                <input type="button" id="load-input" value="load" onclick="document.getElementById('load-input-file').click();">
+                <input type="file" id="load-input-file" onchange="this.files[0].text().then(t => inputEditor.session.setValue(t));" accept=".xml,.xsl,.xslt,.json,.html,.htm,.txt,.text,text/xml,application/xml,application/json,application/xml+xslt,text/html,text/plain">
+            </div>
+            <div class="grid-item">
+                <select id="code-editor-file-list"></select>
+                <div id="code-editor" class="editor"></div>
+                <input type="button" id="load-code" value="load" onclick="document.getElementById('load-code-file').click();">
+                <input type="file" id="load-code-file" onchange="this.files[0].text().then(t => codeEditor.session.setValue(t));" accept=".xml,.xsl,.xslt,.xsd,text/xml,application/xml,application/xml+xslt">
+            </div>
+        </section>
+        <section class="grid-row button-bar">
+            <label>
+                Result documents:
+                <select name="results" id="results"></select>
+            </label>
+            <label id="render-result">
+                render result
+                <input type="checkbox" id="render-box" name="render-box" checked>
+            </label>
+        </section>
+        <section class="grid-row">
+            <div class="grid-item">
+                <div id="result-editor" class="editor"></div>
+                <a id="save-result" onclick="var blob = new Blob([resultEditor.session.getValue()], { type: 'text/html' }); this.download = document.getElementById('results').value; this.href = window.URL.createObjectURL(blob);">save</a>
+            </div>
+            <div id="result-frame-container" class="grid-item">
+                <iframe id="current-result-frame" name="current-result-frame" src="about:blank" sandbox="allow-forms allow-scripts allow-same-origin"></iframe>
+            </div>
+        </section>
+    </main>
+</div>
+<script>const base_url = window.location.href.replace(/[^/]*$/, '');</script>
+<script>
+//import { fileOpen, directoryOpen, fileSave, supported } from 'https://cdn.jsdelivr.net/npm/browser-fs-access@0.35.0/dist/index.modern.js';
+
+// var pyodide;
+// async function preLoadPyodide() {
+//     pyodide = await loadPyodide();
+// }
+
+const loadedDirectories = {};
+
+const currentDirectory = { dirHandle : null };
+
+async function readSubFile(dirHandle, filePath) {
+    const pathComponents = filePath.split('/');
+    let fileHandle = null;
+    for (let i = 0; i < pathComponents.length; i++) {
+        if (i + 1 === pathComponents.length) {
+            fileHandle = await dirHandle.getFileHandle(pathComponents[i]);
+        }
+        else {
+            dirHandle = await dirHandle.getDirectoryHandle(pathComponents[i]);
+        }
+    }
+    return await (await fileHandle.getFile()).text();
+}
+async function populateSelect(select, fileList, editor) {
+    select.textContent = '';
+    select.appendChild(new Option('--- Select input file ---'));
+    for (const file of fileList) {
+        select.appendChild(new Option(file, file));
+    }
+    select.addEventListener('change', async () => { if (select.selectedIndex !== 0 ) { editor.session.setValue(await readSubFile(currentDirectory.dirHandle, select.value)) }});
+}
+
+async function getFilesRoot(dirHandle, rootHandle) {
+    const files = [];
+    for await (const entry of dirHandle.values()) {
+        if (entry.kind === 'file') {
+            const paths = await rootHandle.resolve(entry);
+            files.push(paths.join('/'));
+        }
+        else if (entry.kind === 'directory') {
+            files.push(... await getFilesRoot(entry, rootHandle));
+        }
+    }
+    return files;
+}
+
+async function getFiles(dirHandle) {
+    return await getFilesRoot(dirHandle, dirHandle);
+}
+
+async function loadDirectory() {
+    //await preLoadPyodide();
+    const dirHandle = await showDirectoryPicker({mode: "readwrite"});
+    // const permissionStatus = await dirHandle.requestPermission({
+    //    mode: "readwrite",
+    // });
+    //
+    // if (permissionStatus !== "granted") {
+    //    throw new Error("readwrite access to directory not granted");
+    // }
+
+    currentDirectory.dirHandle = dirHandle;
+
+    document.getElementById('working-directory').value = dirHandle.name;
+
+    //pyodide.mountNativeFS(`/${dirHandle.name}`, dirHandle);
+
+    const fileList = await getFiles(dirHandle);
+
+    await populateSelect(document.getElementById('input-editor-file-list'), fileList, inputEditor);
+    await populateSelect(document.getElementById('code-editor-file-list'), fileList, codeEditor);
+
+    loadedDirectories[dirHandle.name] = { dirHandle : dirHandle, name : dirHandle.name, fileList : fileList };
+}
+
+document.getElementById('load-directory-btn').addEventListener('click', loadDirectory);
+</script>
+<script src="js/frame-write.js"></script>
+<script src="js/ace-modes.js"></script>
+<script src="js/ace-editors-init.js"></script>
+<script src="js/event-listeners-init.js"></script>
+<script src="js/init-examples-xslt-1.0.js"></script>
+<script type="module">
+import { transform } from './js/xslt-1.0-async-transform.js';
+document.getElementById('transform').addEventListener(
+    'click',
+    () => {
+        let xml = inputEditor.session.getValue();
+        let xslt = codeEditor.session.getValue();
+        let dirHandle = currentDirectory?.dirHandle;
+        let baseUri = dirHandle ? `file:/${dirHandle.name}/` : base_url;
+        transform(xml, xslt, currentDirectory?.dirHandle, baseUri);
+    }
+);
+</script>
+<script type="module">
+    import { validate } from './js/async-validate.js';
+    document.getElementById('xsd').addEventListener(
+        'click',
+        () => {
+            let xml = inputEditor.session.getValue();
+            let xsd = codeEditor.session.getValue();
+            let xsdVersion = document.getElementById('xsd-version').value;
+            let dirHandle = currentDirectory?.dirHandle;
+            let baseUri = dirHandle ? `file:/${dirHandle.name}/` : base_url;
+            validate(xml, xsd, xsdVersion, currentDirectory?.dirHandle, baseUri);
+        }
+    );
+</script>
+
+<script type="module">
+    import { schematronValidation } from './js/async-schematron-validation.js';
+    document.getElementById('xsd').addEventListener(
+        'click',
+        () => {
+            let xml = inputEditor.session.getValue();
+            let schematron = codeEditor.session.getValue();
+            let dirHandle = currentDirectory?.dirHandle;
+            let baseUri = dirHandle ? `file:/${dirHandle.name}/` : base_url;
+            schematronValidation(xml, schematrong, currentDirectory?.dirHandle, baseUri);
+        }
+    );
+</script>
+</body>
+</html>
