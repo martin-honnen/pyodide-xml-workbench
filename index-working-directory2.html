@@ -46,7 +46,7 @@
                             xpath(inputType !== 'None' ? inputEditor.session.getValue() : null, codeEditor.session.getValue(), inputType, document.getElementById('results'));">
         -->
         <input type="button" id="xsd" value="XSD validation" accesskey="V" title="validate XML against XSD schema">
-        <input type="button" id="schematrong" value="Schematron validation" title="validate XML against Schematrong">
+        <input type="button" id="schematron" value="Schematron validation" title="validate XML against Schematron">
         <input type="button" id="save" value="save as URL" accesskey="s"
                onclick="save(document.getElementById('input-type-form'));">
     </nav>
@@ -208,7 +208,7 @@ document.getElementById('transform').addEventListener(
 
 <script type="module">
     import { schematronValidation } from './js/async-schematron-validation.js';
-    document.getElementById('xsd').addEventListener(
+    document.getElementById('schematron').addEventListener(
         'click',
         () => {
             let xml = inputEditor.session.getValue();
