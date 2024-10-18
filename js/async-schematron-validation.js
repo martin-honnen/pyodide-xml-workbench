@@ -7,7 +7,7 @@ async function schematronValidation(xml, schematron, dirHandle, baseUri) {
         const { results, error } = await asyncRun({xml, schematron, dirHandle, baseUri});
 
         if (results) {
-            setDocument(resultEditor, results, 'text');
+            setDocument(resultEditor, results, 'xml');
             console.log("pyodideWorker return results: ", results);
         } else if (error) {
             setDocument(resultEditor, error, 'text');
