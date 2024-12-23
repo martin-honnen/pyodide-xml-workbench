@@ -25,7 +25,7 @@ phase = '#ALL'
 
 #print(f'base_url={base_url}')
 
-base_path = Path(mountDir).absolute() if mount is not None else None
+base_path = Path(mountDir).absolute() if mountDir is not None else None
 
 schematron_xml = load_xml_document(schematron)
 parsing_context = ParsingContext(base_path=base_path)
