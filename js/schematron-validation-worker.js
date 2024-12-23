@@ -21,12 +21,14 @@ from pathlib import Path
 
 phase = '#ALL'
 
-base_url = Path(mountDir).absolute().as_uri()
+#base_url = Path(mountDir).absolute().as_uri()
 
-print(f'base_url={base_url}')
+#print(f'base_url={base_url}')
+
+base_path = Path(mountDir).absolute() if mount is not None else None
 
 schematron_xml = load_xml_document(schematron)
-parsing_context = ParsingContext(base_path=Path(mountDir).absolute())
+parsing_context = ParsingContext(base_path=base_path)
 
 schematron_parser = SchemaParser()
 schema = schematron_parser.parse(schematron_xml.getroot(), parsing_context)
