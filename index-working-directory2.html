@@ -132,7 +132,10 @@ async function getFilesRoot(dirHandle, rootHandle) {
     const files = [];
     for await (const entry of dirHandle.values()) {
         if (entry.kind === 'file') {
-            const paths = await rootHandle.resolve(entry);
+            var paths = await rootHandle.resolve(entry);
+            if (paths.length === 2 && paths[0] === 'document' && paths[1].startsWith('primary%3ADocuments%2F')) {
+                paths = paths[1].replace(/^primary%3ADocuments%2F/g, '').replace('%2F', '/').split('/');
+            }
             files.push(paths.join('/'));
         }
         else if (entry.kind === 'directory') {
