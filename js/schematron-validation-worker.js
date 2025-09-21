@@ -57,12 +57,10 @@ async function loadPyodideAndPackages() {
     await pyodide.loadPackagesFromImports(python);
 
     await pyodide.loadPackage("micropip");
+    
     const micropip = pyodide.pyimport("micropip");
-
-    //await micropip.install.callKwargs('lxml~=6.0.1', {reinstall: true});
+    
     await micropip.install('pyschematron');
-    //await micropip.install.callKwargs('pyschematron', {reinstall: true});
-
 }
 
 let pyodideReadyPromise = loadPyodideAndPackages();
