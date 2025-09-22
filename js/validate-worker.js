@@ -3,7 +3,7 @@
 // Setup your project to serve `py-worker.js`. You should also serve
 // `pyodide.js`, and all its associated `.asm.js`, `.json`,
 // and `.wasm` files as well:
-importScripts("https://cdn.jsdelivr.net/pyodide/v0.28.2/full/pyodide.js");
+importScripts("https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js");
 
 const python = `
 import js
@@ -73,4 +73,5 @@ path.exists()
         self.postMessage({ error: error.message, id });
     }
 };
+
 
