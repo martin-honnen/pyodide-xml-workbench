@@ -60,7 +60,18 @@ async function loadPyodideAndPackages() {
     
     const micropip = pyodide.pyimport("micropip");
     
-    await micropip.install('pyschematron');
+    //await micropip.install('pyschematron');
+    await micropip.install([
+  "xmlschema~=4.1.0",
+  "elementpath~=5.0.4",
+  "typer>=0.17.4", // Avoid "[all]" extra
+  "appdirs~=1.4.4",
+  //"lxml~=6.0.0",
+  "Jinja2~=3.1.6",
+  "ruyaml~=0.91.0",
+  "frozendict~=2.4.6"
+]);
+    await micropip.install("https://github.com/robbert-harms/pyschematron/archive/refs/heads/main.zip");
 }
 
 let pyodideReadyPromise = loadPyodideAndPackages();
