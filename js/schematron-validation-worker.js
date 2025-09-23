@@ -71,7 +71,7 @@ async function loadPyodideAndPackages() {
   "ruyaml~=0.91.0",
   "frozendict~=2.4.6"
 ]);
-    await micropip.install("https://github.com/robbert-harms/pyschematron/archive/refs/heads/main.zip");
+    await micropip.install("https://files.pythonhosted.org/packages/cd/5d/6c7da1fac752df8513985a3e1cf563b7cca4fb69544f98366fcf44ede0eb/pyschematron-1.1.10-py3-none-any.whl");
 }
 
 let pyodideReadyPromise = loadPyodideAndPackages();
