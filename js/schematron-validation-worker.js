@@ -60,18 +60,19 @@ async function loadPyodideAndPackages() {
     
     const micropip = pyodide.pyimport("micropip");
     
-    //await micropip.install('pyschematron');
-    await micropip.install([
-  "xmlschema~=4.1.0",
-  "elementpath~=5.0.4",
-  "typer>=0.17.4", // Avoid "[all]" extra
-  "appdirs~=1.4.4",
+    await micropip.install('pyschematron');
+    
+    //await micropip.install([
+  //"xmlschema~=4.1.0",
+  //"elementpath~=5.0.4",
+  //"typer>=0.17.4", // Avoid "[all]" extra
+  //"appdirs~=1.4.4",
   //"lxml~=6.0.0",
-  "Jinja2~=3.1.6",
-  "ruyaml~=0.91.0",
-  "frozendict~=2.4.6"
-]);
-    await micropip.install("https://files.pythonhosted.org/packages/cd/5d/6c7da1fac752df8513985a3e1cf563b7cca4fb69544f98366fcf44ede0eb/pyschematron-1.1.10-py3-none-any.whl");
+  //"Jinja2~=3.1.6",
+  //"ruyaml~=0.91.0",
+  //"frozendict~=2.4.6"
+//]);
+    //await micropip.install("https://files.pythonhosted.org/packages/cd/5d/6c7da1fac752df8513985a3e1cf563b7cca4fb69544f98366fcf44ede0eb/pyschematron-1.1.10-py3-none-any.whl");
 }
 
 let pyodideReadyPromise = loadPyodideAndPackages();
